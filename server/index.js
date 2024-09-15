@@ -10,11 +10,13 @@ import userRoute from "./routes/userRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 8080;
 const MONGODB_URI = process.env.MONGODB_URI;
+const FRONTEND_DOMAIN = process.env.FRONTEND_DOMAIN;
 
 connectMongoDB(MONGODB_URI);
 
 const whitelist = [
-  "http://localhost:5173"
+  "http://localhost:5173",
+  FRONTEND_DOMAIN
 ];
 
 const corsOptions = {
