@@ -16,9 +16,9 @@ connectMongoDB(MONGODB_URI);
 
 const whitelist = [
   "http://localhost:5173",
-  "https://richu-bloghub.vercel.app/",
-  "https://blog-hub-git-main-richusonys-projects.vercel.app/",
-  "https://blog-iqepim5yi-richusonys-projects.vercel.app/",
+  "https://richu-bloghub.vercel.app",
+  "https://blog-hub-git-main-richusonys-projects.vercel.app",
+  "https://blog-iqepim5yi-richusonys-projects.vercel.app",
   "https://bloghub-nfwx.onrender.com",
 ];
 
