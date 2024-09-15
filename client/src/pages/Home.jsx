@@ -27,69 +27,6 @@ export default function Component() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200">
       {/* Navbar */}
-      {/* <nav className="bg-white shadow-lg">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between">
-            <div className="flex space-x-7">
-              <div>
-                <a href="#" className="flex items-center py-4 px-2">
-                  <span className="font-semibold text-gray-500 text-lg">BlogHub</span>
-                </a>
-              </div>
-              <div className="hidden md:flex items-center space-x-1">
-                {navItems.map((item) => (
-                  <a
-                    key={item}
-                    href="#"
-                    className={`py-4 px-2 font-semibold transition duration-300 ${activeNavItem === item
-                        ? 'text-purple-500 border-b-4 border-purple-500'
-                        : 'text-gray-500 hover:text-purple-500'
-                      }`}
-                    onClick={() => handleNavItemClick(item)}
-                  >
-                    {item}
-                  </a>
-                ))}
-              </div>
-            </div>
-            <div className="hidden md:flex items-center space-x-3">
-              <a href="/signin" className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-purple-500 hover:text-white transition duration-300">Log In</a>
-              <a href="/signup" className="py-2 px-2 font-medium text-white bg-purple-500 rounded hover:bg-purple-400 transition duration-300">Sign Up</a>
-            </div>
-            <div className="md:hidden flex items-center">
-              <button className="outline-none mobile-menu-button" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                <svg className="w-6 h-6 text-gray-500 hover:text-purple-500"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
-          {navItems.map((item) => (
-            <a
-              key={item}
-              href="#"
-              className={`block py-2 px-4 text-sm ${activeNavItem === item
-                  ? 'bg-purple-500 text-white'
-                  : 'hover:bg-purple-500 hover:text-white'
-                } transition duration-300`}
-              onClick={() => handleNavItemClick(item)}
-            >
-              {item}
-            </a>
-          ))}
-          <a href="#" className="block py-2 px-4 text-sm hover:bg-purple-500 hover:text-white transition duration-300">Log In</a>
-          <a href="#" className="block py-2 px-4 text-sm hover:bg-purple-500 hover:text-white transition duration-300">Sign Up</a>
-        </div>
-      </nav> */}
       <DefaultNavbar />
 
       {/* Main Content */}
