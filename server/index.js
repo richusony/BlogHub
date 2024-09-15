@@ -16,7 +16,9 @@ connectMongoDB(MONGODB_URI);
 
 const whitelist = [
   "http://localhost:5173",
-  FRONTEND_DOMAIN
+  "https://richu-bloghub.vercel.app/",
+  "https://blog-iqepim5yi-richusonys-projects.vercel.app/",
+  "https://blog-hub-git-main-richusonys-projects.vercel.app/",
 ];
 
 const corsOptions = {
@@ -39,6 +41,6 @@ app.use(express.json());
 
 app.use("/", userRoute);
 
-app.listen(PORT,()=>{
-    console.log("listening on",PORT);
-})
+app.listen(PORT, () => {
+  console.log("listening on", PORT);
+});
