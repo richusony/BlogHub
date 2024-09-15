@@ -1,78 +1,106 @@
 import moment from "moment";
 import axiosInstance from '../axiosConfig';
 import { useNavigate } from 'react-router-dom';
-import { validateImageFile } from '../utils/helper';
 import { UserContext } from '../context/userContext';
 import DefaultNavbar from '../components/DefaultNavbar';
 import React, { useContext, useEffect, useState } from 'react';
+import { handleToast, validateImageFile } from '../utils/helper';
 
 // Mock user data
 const userData = {
-  name: "John Doe",
-  email: "john.doe@example.com",
   bio: "Passionate writer and tech enthusiast. I love sharing my knowledge and experiences through my blog posts.",
-  avatar: "/placeholder.svg?height=200&width=200"
 }
-
-// Mock blog posts data
-const initialBlogPosts = [
-  { id: 1, title: "Getting Started with React", date: "2023-05-15", description: "Learn the basics of React and start building your first application...", image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images" },
-  { id: 2, title: "Advanced CSS Techniques", date: "2023-05-14", description: "Discover advanced CSS techniques to create stunning layouts and animations...", image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images" },
-  { id: 3, title: "JavaScript ES6 Features", date: "2023-05-13", description: "Explore the powerful features introduced in ECMAScript 6 and how to use them...", image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images" },
-]
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const [blogPosts, setBlogPosts] = useState([]);
   const { user, logout } = useContext(UserContext);
   const [isEditing, setIsEditing] = useState(null);
-  const [blogPosts, setBlogPosts] = useState(initialBlogPosts);
-  const [newPost, setNewPost] = useState({ title: '', description: '', blogImage: null });
+  const [originalBlog, setOriginalBlog] = useState(null);
+  const [newPost, setNewPost] = useState({ _id: '', title: '', description: '', blogImage: null });
 
   useEffect(() => {
     if (!user) return navigate("/signin");
     getUserPostedBlogs();
-  }, [user])
+  }, [user]);
 
   const getUserPostedBlogs = async () => {
     try {
-      const {data} = await axiosInstance.get("/my-blogs");
+      const { data } = await axiosInstance.get("/my-blogs");
       setBlogPosts(data);
     } catch (error) {
-      return Toastify({
-        text: error?.response?.data?.error,
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast(); 
+      return handleToast(error?.response?.data?.error);
     }
   }
 
   const handleEdit = (id) => {
-    setIsEditing(id)
+    setIsEditing(id);
+    setOriginalBlog(blogPosts.find(post => post._id === id));
   }
 
-  const handleSave = (id) => {
-    setIsEditing(null)
-    // Here you would typically send an API request to update the post
+  const handleSave = async (blog) => {
+    if (!blog.title || !blog.description || !blog.blogImage) {
+      return handleToast("All Fields are required");
+    }
+
+    if (typeof blog.blogImage !== "string") {
+      const imageError = validateImageFile(blog.blogImage);
+      if (imageError) return handleToast(imageError);
+    }
+
+    setIsEditing(null);
+
+    const formData = new FormData();
+    formData.append("_id", blog._id);
+    formData.append("title", blog.title);
+    formData.append("description", blog.description);
+    formData.append("blogImage", blog.blogImage);
+
+    try {
+      const { data } = await axiosInstance.patch("/update-blog", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      });
+
+      setBlogPosts(posts => posts.map(post => post?._id === blog._id ?
+        {
+          _id: data._id,
+          title: data.title || originalBlog.title, // Use the original title if data.title is undefined
+          description: data.description || originalBlog.description, // Use the original description if data.description is undefined
+          blogImage: data.blogImage || originalBlog.blogImage
+        } : post))
+      setOriginalBlog(null);
+
+      return handleToast("Blog Updated");
+    } catch (error) {
+      return handleToast(error?.response?.data?.error);
+    }
   }
 
   const handleCancel = () => {
     setIsEditing(null)
     // Reset any changes made during editing
-    setBlogPosts(initialBlogPosts)
+    setBlogPosts(posts => posts.map(post => post?._id === originalBlog._id ?
+      {
+        _id: originalBlog._id,
+        title: originalBlog.title, // Use the original title if data.title is undefined
+        description: originalBlog.description, // Use the original description if data.description is undefined
+        blogImage: originalBlog.blogImage
+      } : post))
   }
 
-  const handleDelete = (id) => {
-    setBlogPosts(blogPosts.filter(post => post?._id !== id))
-    // Here you would typically send an API request to delete the post
+  const handleDelete = async (id) => {
+    const confirm = window.confirm("Are you sure?");
+    if (!confirm) return;
+
+    try {
+      const res = await axiosInstance.delete("/remove-blog/" + id);
+      setBlogPosts(blogPosts.filter(post => post._id !== id));
+      return handleToast("Blog Deleted Successfully");
+    } catch (error) {
+      return handleToast(error?.response?.data?.error);
+    }
   }
 
   const handleNewPostChange = (e) => {
@@ -83,20 +111,7 @@ export default function ProfilePage() {
 
       const error = validateImageFile(file);
       if (error) {
-        return Toastify({
-          text: error,
-          duration: 3000,
-          destination: "",
-          newWindow: true,
-          close: true,
-          gravity: "top", // `top` or `bottom`
-          position: "left", // `left`, `center` or `right`
-          stopOnFocus: true, // Prevents dismissing of toast on hover
-          style: {
-            background: "linear-gradient(to right, #A554F6, #5547E7)",
-          },
-          onClick: function () { } // Callback after click
-        }).showToast();
+        return handleToast(error);
       }
       setNewPost(prev => ({ ...prev, [name]: file }));
     } else {
@@ -105,62 +120,47 @@ export default function ProfilePage() {
   }
 
   const handleNewPostSubmit = async (e) => {
-    e.preventDefault()
-    // const id = Math.max(...blogPosts.map(post => post?._id)) + 1
-    // const imageUrl = newPost.image ? URL.createObjectURL(newPost.image) : "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images"
-    // setBlogPosts([{ id, date: new Date().toISOString().split('T')[0], ...newPost, image: imageUrl }, ...blogPosts])
-    // setNewPost({ title: '', description: '', image: null })
-    // Here you would typically send an API request to create the new post
+    e.preventDefault();
+    if (!newPost.title || !newPost.description || !newPost.blogImage) {
+      return handleToast("All Fields are required");
+    }
+
+    const imageError = validateImageFile(newPost.blogImage);
+    if (imageError) return handleToast(imageError);
 
     const formData = new FormData();
     formData.append("title", newPost.title);
     formData.append("description", newPost.description);
     formData.append("blogImage", newPost.blogImage);
     try {
-      const res = await axiosInstance.post("/create-blog", formData, {
+      const { data } = await axiosInstance.post("/create-blog", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         }
       });
 
-    setNewPost({ title: '', description: '', blogImage: null });
-    return Toastify({
-        text: "Blog Posted Successfully",
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast(); 
+      setNewPost({ title: '', description: '', blogImage: null });
+      setBlogPosts([...blogPosts, data]);
+
+      return handleToast("Blog Posted Successfully");
     } catch (error) {
-      return Toastify({
-        text: error?.response?.data?.error,
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast(); 
+      return handleToast(error?.response?.data?.error);
     }
   }
 
   const handleImageChange = (e, postId) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const error = validateImageFile(file);
+    if (error) {
+      return handleToast(error);
+    }
+
     if (file) {
-      const imageUrl = URL.createObjectURL(file)
-      setBlogPosts(posts => posts.map(post => post?._id === postId ? { ...post, image: imageUrl } : post))
+      // const imageUrl = URL.createObjectURL(file)
+      setBlogPosts(posts => posts.map(post => post?._id === postId ? { ...post, blogImage: file } : post))
     }
   }
 
@@ -171,20 +171,7 @@ export default function ProfilePage() {
       logout();
       navigate("/signin");
     } catch (error) {
-      return Toastify({
-        text: error?.response?.data?.error,
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast();
+      return handleToast(error?.response?.data?.error);
     }
   }
 
@@ -218,7 +205,7 @@ export default function ProfilePage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Blog Posts</h2>
 
           {/* New Post Form */}
-          <form onSubmit={handleNewPostSubmit} className="mb-8 bg-white shadow sm:rounded-lg">
+          <form onSubmit={handleNewPostSubmit} key={"newPostForm"} className="mb-8 bg-white shadow sm:rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Create New Post</h3>
               <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
@@ -273,7 +260,7 @@ export default function ProfilePage() {
           </form>
 
           {/* Blog Posts List */}
-          <div className="space-y-6">
+          <div key={"BlogPostList"} className="space-y-6">
             {blogPosts.length > 0 && blogPosts.map(post => (
               <div key={post?._id} className="bg-white shadow overflow-hidden sm:rounded-lg">
                 <div className="md:flex">
@@ -290,7 +277,7 @@ export default function ProfilePage() {
                             id={`edit-title-${post?._id}`}
                             value={post?.title}
                             onChange={(e) => setBlogPosts(posts => posts.map(p => p._id === post?._id ? { ...p, title: e.target.value } : p))}
-                            className="mt-1 focus:ring-purple-500 focus:border-purple-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            className="py-1 px-1 mt-1 focus:ring-purple-500 focus:border-purple-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                           />
                         </div>
                         <div>
@@ -299,7 +286,7 @@ export default function ProfilePage() {
                             id={`edit-description-${post?._id}`}
                             value={post?.description}
                             onChange={(e) => setBlogPosts(posts => posts.map(p => p._id === post?._id ? { ...p, description: e.target.value } : p))}
-                            className="mt-1 focus:ring-purple-500 focus:border-purple-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            className="py-1 px-2 mt-1 focus:ring-purple-500 focus:border-purple-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                             rows="3"
                           ></textarea>
                         </div>
@@ -310,11 +297,12 @@ export default function ProfilePage() {
                             id={`edit-image-${post?._id}`}
                             onChange={(e) => handleImageChange(e, post?._id)}
                             accept="image/*"
+                            name="blogImage"
                             className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                           />
                         </div>
                         <div className="flex space-x-2">
-                          <button onClick={() => handleSave(post?._id)} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                          <button onClick={() => handleSave(post)} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                             Save
                           </button>
                           <button onClick={handleCancel} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
@@ -324,9 +312,9 @@ export default function ProfilePage() {
                       </div>
                     ) : (
                       <div>
-                        <h3 className="text-xl font-semibold mb-2">{post?.title.length > 100 ? post?.description.substring(0,100) + "...": post?.title}</h3>
+                        <h3 className="text-xl font-semibold mb-2">{post?.title.length > 80 ? post?.title.substring(0, 80) + "..." : post?.title}</h3>
                         <p className="text-gray-600 mb-2">{moment(post?.updatedAt).format("YYYY-MM-DD")}</p>
-                        <p className="text-gray-700 mb-4">{post?.description.length > 100 ? post?.description.substring(0,100) + "...": post?.description}</p>
+                        <p className="text-gray-700 mb-4">{post?.description.length > 100 ? post?.description.substring(0, 100) + "..." : post?.description}</p>
                         <div className="flex space-x-2">
                           <button onClick={() => handleEdit(post?._id)} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             Edit

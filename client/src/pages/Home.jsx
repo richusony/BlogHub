@@ -3,15 +3,6 @@ import axiosInstance from '../axiosConfig';
 import { useEffect, useState } from 'react';
 import DefaultNavbar from '../components/DefaultNavbar';
 
-// Mock data for blog posts
-const blogPosts = [
-  { id: 1, title: "Getting Started with React", author: "Jane Doe", date: "2023-05-15", category: "React", excerpt: "Learn the basics of React and start building your first application. This comprehensive guide will walk you through the core concepts and help you set up your development environment.", image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images" },
-  { id: 2, title: "Advanced CSS Techniques", author: "John Smith", date: "2023-05-14", category: "CSS", excerpt: "Discover advanced CSS techniques to create stunning layouts and animations. From CSS Grid to custom properties, elevate your styling skills to the next level.", image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images" },
-  { id: 3, title: "JavaScript ES6 Features", author: "Emily Johnson", date: "2023-05-13", category: "JavaScript", excerpt: "Explore the powerful features introduced in ECMAScript 6 and how to use them in your projects. Learn about arrow functions, destructuring, and more.", image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images" },
-  { id: 4, title: "Building RESTful APIs", author: "Michael Brown", date: "2023-05-12", category: "Backend", excerpt: "Learn how to design and implement RESTful APIs for your web applications. This guide covers best practices, authentication, and common pitfalls to avoid.", image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images" },
-  { id: 5, title: "Introduction to Machine Learning", author: "Sarah Wilson", date: "2023-05-11", category: "AI", excerpt: "Get started with machine learning concepts and implement your first ML model. This beginner-friendly guide will introduce you to key algorithms and practical applications.", image: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images" },
-]
-
 export default function Component() {
   const [blogs, setBlogs] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -119,7 +110,7 @@ export default function Component() {
         {/* Blog Posts */}
         <div className="space-y-8">
           {filteredPosts.map(post => (
-            <div key={post?.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div key={post?._id} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="md:flex">
                 <div className="md:w-1/3 lg:w-1/4">
                   <div className="h-48 md:h-full w-full relative">

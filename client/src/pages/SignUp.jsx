@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import Toastify from 'toastify-js';
-import "toastify-js/src/toastify.css";
 import axiosInstance from '../axiosConfig';
 import { Link, useNavigate } from 'react-router-dom';
-import { validateEmail, validatePassword } from '../utils/helper';
+import { handleToast, validateEmail, validatePassword } from '../utils/helper';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -25,88 +23,23 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
-      return Toastify({
-        text: "Fill all fields",
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast();
+      return handleToast("Fill all fields");
     }
 
     if (!validateEmail(formData.email)) {
-      return Toastify({
-        text: "Enter a valid email",
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast();
+      return handleToast("Enter a valid email");
     }
 
     if (!validatePassword(formData.password)) {
-      return Toastify({
-        text: "Password must be 8 characters includes uppercase, lowercase, and digits",
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast();
+      return handleToast("Password must be 8 characters includes uppercase, lowercase, and digits");
     }
 
     try {
       const res = await axiosInstance.post("/signup", formData);
-      Toastify({
-        text: "Account Created Successfully",
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast();
-      navigate("/signin");
+      handleToast("Account Created Successfully");
+      return navigate("/signin");
     } catch (error) {
-      return Toastify({
-        text: error?.response?.data?.error,
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast();
+      return handleToast(error?.response?.data?.error);
     }
   }
 

@@ -1,6 +1,6 @@
+import { Link, useNavigate } from 'react-router-dom';
 import React, { useContext, useState } from 'react';
 import { UserContext } from '../context/userContext';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
 
 const DefaultNavbar = () => {
   const navigate = useNavigate();
@@ -15,7 +15,6 @@ const DefaultNavbar = () => {
     { page: 'Categories', path: "/" },
     { page: 'About', path: "/" },
     { page: 'Contact', path: "/" },
-    // { page: 'Profile', path: "/profile" }
   ];
 
   const handleNavItemClick = (item) => {
@@ -23,14 +22,14 @@ const DefaultNavbar = () => {
     setIsMenuOpen(false);
     navigate(item.path);
   }
-// console.log("navbar user", user);
+
   return (
     <nav className="bg-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <span className="font-semibold text-xl text-gray-800">BlogHub</span>
+              <Link to="/" className="font-semibold text-xl text-gray-800">BlogHub</Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               {navItems.map((item) => (

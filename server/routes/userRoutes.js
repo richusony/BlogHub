@@ -10,6 +10,8 @@ import {
   userRefreshToken,
   logoutUser,
   createNewPost,
+  updateBlog,
+  removeUserBlog
 } from "../controllers/userController.js";
 import { parser } from "../utils/multer.js";
 
@@ -28,6 +30,10 @@ router.get("/my-blogs", userAuth, getUserPostedBlogs);
 router.get("/profile", userAuth, getUserProfileDetailsAndBlogs);
 
 router.post("/create-blog", userAuth, parser.single("blogImage"), createNewPost);
+
+router.patch("/update-blog", userAuth, parser.single("blogImage"), updateBlog);
+
+router.delete("/remove-blog/:blogId", userAuth, removeUserBlog);
 
 router.post("/refresh-token", userRefreshToken);
 

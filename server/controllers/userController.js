@@ -13,7 +13,9 @@ import {
 
 export const getAllBlogs = async (req, res) => {
   try {
-    const allBlogs = await BlogModel.find({}).sort({ updatedAt: -1 }).populate("userId");
+    const allBlogs = await BlogModel.find({})
+      .sort({ updatedAt: -1 })
+      .populate("userId");
     console.log("fetched all blogs");
     res.status(200).json(allBlogs);
   } catch (error) {
@@ -99,7 +101,7 @@ export const getUserProfileDetailsAndBlogs = async (req, res) => {
     const userDetails = await UserModel.findById(userId);
     if (!userDetails) return res.status(404).json({ error: "User not Found" });
 
-    const fetchBlogs = await BlogModel.find({ userId });
+    const fetchBlogs = await BlogModel.find({ userId }).sort({updatedAt: -1});
 
     console.log("Fetched User Details & Blogs");
     res.status(200).json({ userDetails, blogs: fetchBlogs });
@@ -125,36 +127,105 @@ export const getUserDetails = async (req, res) => {
 };
 
 export const createNewPost = async (req, res) => {
-  const { title, description } = req.body;
-  const blogImage = req?.file;
-  const userId = req.user._id;
+  try {
+    const { title, description } = req.body;
+    const blogImage = req?.file;
+    const userId = req.user._id;
 
-  if (!title || !description || !blogImage)
+    if (!title || !description || !blogImage)
+      return res.status(400).json({ error: "All fields required" });
+
+    const imageError = validateImageFile(blogImage);
+    if (imageError) return res.status(400).json({ error: imageError });
+
+    const createBlog = await BlogModel.create({
+      blogImage: blogImage.path,
+      description,
+      title,
+      userId,
+    });
+    if (!createBlog)
+      return res
+        .status(400)
+        .json({ error: "Something went wrong. Please try after sometime" });
+
+    console.log("blog posted");
+    res.status(200).json(createBlog);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const updateBlog = async (req, res) => {
+  const { _id, title, description, blogImage } = req.body;
+  const newBlogImage = req?.file;
+  console.log(req.body);
+  if (!title || !description)
     return res.status(400).json({ error: "All fields required" });
 
-  const imageError = validateImageFile(blogImage);
-  if (imageError) return res.status(400).json({ error: imageError });
+  if (!newBlogImage && !blogImage)
+    return res.status(400).json({ error: "Blog Image is required" });
 
-  const createBlog = await BlogModel.create({
-    blogImage: blogImage.path,
-    description,
-    title,
-    userId,
-  });
-  if (!createBlog)
+  if (newBlogImage) {
+    const imageError = validateImageFile(newBlogImage);
+    if (imageError) return res.status(400).json({ error: imageError });
+  }
+
+  const updatedImage = newBlogImage ? newBlogImage.path : blogImage;
+
+  const updateBlog = await BlogModel.findByIdAndUpdate(
+    _id,
+    {
+      title,
+      description,
+      blogImage: updatedImage,
+    },
+    { new: true }
+  );
+  if (!updateBlog)
     return res
       .status(400)
       .json({ error: "Something went wrong. Please try after sometime" });
 
-  console.log("blog posted");
-  res.status(200).json(createBlog);
+  console.log("Blog Updated");
+  res.status(200).json(updateBlog);
+  try {
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
 };
 
 export const getUserPostedBlogs = async (req, res) => {
   const userId = req.user._id;
   try {
-    const blogs = await BlogModel.find({ userId });
+    const blogs = await BlogModel.find({ userId }).sort({updatedAt: -1});
     res.status(200).json(blogs);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const removeUserBlog = async (req, res) => {
+  const userId = req.user._id;
+  const { blogId } = req.params;
+
+  try {
+    const blogExists = await BlogModel.findById(blogId);
+    if (!blogExists) return res.status(404).json({ error: "Blog not found" });
+
+    if (blogExists.userId.toString() !== userId.toString())
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to delete this post" });
+
+    const deleteBlog = await BlogModel.findByIdAndDelete(blogId);
+    if (!deleteBlog) return res.status(400).json({error: "Something went wrong. Please try after sometime"});
+
+    console.log("Blog Deleted");
+    res.status(200).json({message: "Blog Deleted Successfully"})
   } catch (error) {
     console.log(error.message);
     res.status(400).json({ error: error.message });

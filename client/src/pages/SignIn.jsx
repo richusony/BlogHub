@@ -1,8 +1,8 @@
 import axiosInstance from '../axiosConfig';
 import { useContext, useState } from 'react';
-import { validateEmail } from '../utils/helper';
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from '../context/userContext';
+import { handleToast, validateEmail } from '../utils/helper';
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -23,37 +23,11 @@ export default function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.email || !formData.password) {
-      return Toastify({
-        text: "Fill all fields",
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast();
+      return handleToast("Fill all fields");
     }
 
     if (!validateEmail(formData.email)) {
-      return Toastify({
-        text: "Enter a valid email",
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast();
+      return handleToast("Enter a valid email");
     }
 
     try {
@@ -61,20 +35,7 @@ export default function SignIn() {
       login(res?.data?.user, res?.data?.accessToken, res?.data?.refreshToken);
       navigate("/");
     } catch (error) {
-      return Toastify({
-        text: error?.response?.data?.error,
-        duration: 3000,
-        destination: "",
-        newWindow: true,
-        close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "left", // `left`, `center` or `right`
-        stopOnFocus: true, // Prevents dismissing of toast on hover
-        style: {
-          background: "linear-gradient(to right, #A554F6, #5547E7)",
-        },
-        onClick: function () { } // Callback after click
-      }).showToast(); 
+      return handleToast(error?.response?.data?.error);
     }
   }
 
@@ -123,9 +84,9 @@ export default function SignIn() {
               </label>
             </div>
             <div className="text-sm">
-              <a href="#" className="font-medium text-purple-600 hover:text-purple-500">
+              <Link to="#" className="font-medium text-purple-600 hover:text-purple-500">
                 Forgot your password?
-              </a>
+              </Link>
             </div>
           </div>
           <div>
