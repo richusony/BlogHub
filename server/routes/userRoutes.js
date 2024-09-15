@@ -1,5 +1,16 @@
 import express from "express";
-import { getAllBlogs, signIn, signUp } from "../controllers/userController.js";
+import userAuth from "../middlewares/auth.js";
+import {
+  getAllBlogs,
+  getUserDetails,
+  getUserProfileDetailsAndBlogs,
+  signIn,
+  signUp,
+  userRefreshToken,
+  logoutUser,
+  createNewPost,
+} from "../controllers/userController.js";
+import { parser } from "../utils/multer.js";
 
 const router = express.Router();
 
@@ -9,5 +20,14 @@ router.post("/signUp", signUp);
 
 router.post("/signin", signIn);
 
+router.get("/get-user", userAuth, getUserDetails);
+
+router.get("/profile", userAuth, getUserProfileDetailsAndBlogs);
+
+router.post("/create-blog", userAuth, parser.single("blogImage"), createNewPost);
+
+router.post("/refresh-token", userRefreshToken);
+
+router.delete("/logout", userAuth, logoutUser);
 
 export default router;

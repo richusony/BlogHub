@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState } from 'react';
+import DefaultNavbar from '../components/DefaultNavbar';
 
 // Mock data for blog posts
 const blogPosts = [
@@ -10,9 +11,7 @@ const blogPosts = [
 ]
 
 export default function Component() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [activeNavItem, setActiveNavItem] = useState('Home')
+  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredPosts = blogPosts.filter(post =>
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -20,17 +19,10 @@ export default function Component() {
     post.category.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleNavItemClick = (item) => {
-    setActiveNavItem(item)
-    setIsMenuOpen(false)
-  }
-
-  const navItems = ['Home', 'Categories', 'About', 'Contact']
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200">
       {/* Navbar */}
-      <nav className="bg-white shadow-lg">
+      {/* <nav className="bg-white shadow-lg">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between">
             <div className="flex space-x-7">
@@ -44,11 +36,10 @@ export default function Component() {
                   <a
                     key={item}
                     href="#"
-                    className={`py-4 px-2 font-semibold transition duration-300 ${
-                      activeNavItem === item
+                    className={`py-4 px-2 font-semibold transition duration-300 ${activeNavItem === item
                         ? 'text-purple-500 border-b-4 border-purple-500'
                         : 'text-gray-500 hover:text-purple-500'
-                    }`}
+                      }`}
                     onClick={() => handleNavItemClick(item)}
                   >
                     {item}
@@ -81,11 +72,10 @@ export default function Component() {
             <a
               key={item}
               href="#"
-              className={`block py-2 px-4 text-sm ${
-                activeNavItem === item
+              className={`block py-2 px-4 text-sm ${activeNavItem === item
                   ? 'bg-purple-500 text-white'
                   : 'hover:bg-purple-500 hover:text-white'
-              } transition duration-300`}
+                } transition duration-300`}
               onClick={() => handleNavItemClick(item)}
             >
               {item}
@@ -94,12 +84,13 @@ export default function Component() {
           <a href="#" className="block py-2 px-4 text-sm hover:bg-purple-500 hover:text-white transition duration-300">Log In</a>
           <a href="#" className="block py-2 px-4 text-sm hover:bg-purple-500 hover:text-white transition duration-300">Sign Up</a>
         </div>
-      </nav>
+      </nav> */}
+      <DefaultNavbar />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-6">Welcome to BlogHub</h1>
-        
+
         {/* Search Bar */}
         <div className="mb-8">
           <input

@@ -1,8 +1,12 @@
-import { useState } from 'react';
-import {Link} from "react-router-dom";
+import axiosInstance from '../axiosConfig';
+import { useContext, useState } from 'react';
 import { validateEmail } from '../utils/helper';
+import { Link, useNavigate } from "react-router-dom";
+import { UserContext } from '../context/userContext';
 
 export default function SignIn() {
+  const navigate = useNavigate();
+  const { login } = useContext(UserContext);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -16,9 +20,9 @@ export default function SignIn() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-     if(!formData.email || !formData.password) {
+    if (!formData.email || !formData.password) {
       return Toastify({
         text: "Fill all fields",
         duration: 3000,
@@ -52,7 +56,26 @@ export default function SignIn() {
       }).showToast();
     }
 
-    console.log('Login attempted:', formData)
+    try {
+      const res = await axiosInstance.post("/signin", formData);
+      login(res?.data?.user, res?.data?.accessToken, res?.data?.refreshToken);
+      navigate("/");
+    } catch (error) {
+      return Toastify({
+        text: error?.response?.data?.error,
+        duration: 3000,
+        destination: "",
+        newWindow: true,
+        close: true,
+        gravity: "top", // `top` or `bottom`
+        position: "left", // `left`, `center` or `right`
+        stopOnFocus: true, // Prevents dismissing of toast on hover
+        style: {
+          background: "linear-gradient(to right, #A554F6, #5547E7)",
+        },
+        onClick: function () { } // Callback after click
+      }).showToast(); 
+    }
   }
 
   return (

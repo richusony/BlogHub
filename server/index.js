@@ -13,7 +13,24 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 connectMongoDB(MONGODB_URI);
 
-app.use(cors());
+const whitelist = [
+  "http://localhost:5173"
+];
+
+const corsOptions = {
+  credentials: true,
+  origin: (origin, callback) => {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      // console.log("origin :::: ", origin);
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS: " + origin));
+    }
+  },
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.json());

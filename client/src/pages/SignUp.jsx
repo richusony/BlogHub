@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import Toastify from 'toastify-js';
 import "toastify-js/src/toastify.css";
-import { Link } from 'react-router-dom';
+import axiosInstance from '../axiosConfig';
+import { Link, useNavigate } from 'react-router-dom';
 import { validateEmail, validatePassword } from '../utils/helper';
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -20,9 +22,9 @@ export default function SignUp() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if(!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
       return Toastify({
         text: "Fill all fields",
         duration: 3000,
@@ -73,7 +75,39 @@ export default function SignUp() {
       }).showToast();
     }
 
-    console.log('Form submitted:', formData)
+    try {
+      const res = await axiosInstance.post("/signup", formData);
+      Toastify({
+        text: "Account Created Successfully",
+        duration: 3000,
+        destination: "",
+        newWindow: true,
+        close: true,
+        gravity: "top", // `top` or `bottom`
+        position: "left", // `left`, `center` or `right`
+        stopOnFocus: true, // Prevents dismissing of toast on hover
+        style: {
+          background: "linear-gradient(to right, #A554F6, #5547E7)",
+        },
+        onClick: function () { } // Callback after click
+      }).showToast();
+      navigate("/signin");
+    } catch (error) {
+      return Toastify({
+        text: error?.response?.data?.error,
+        duration: 3000,
+        destination: "",
+        newWindow: true,
+        close: true,
+        gravity: "top", // `top` or `bottom`
+        position: "left", // `left`, `center` or `right`
+        stopOnFocus: true, // Prevents dismissing of toast on hover
+        style: {
+          background: "linear-gradient(to right, #A554F6, #5547E7)",
+        },
+        onClick: function () { } // Callback after click
+      }).showToast();
+    }
   }
 
   return (
