@@ -1,9 +1,10 @@
+import moment from "moment";
+import axiosInstance from '../axiosConfig';
 import { useNavigate } from 'react-router-dom';
-import React, { useContext, useEffect, useState } from 'react';
+import { validateImageFile } from '../utils/helper';
 import { UserContext } from '../context/userContext';
 import DefaultNavbar from '../components/DefaultNavbar';
-import axiosInstance from '../axiosConfig';
-import { validateImageFile } from '../utils/helper';
+import React, { useContext, useEffect, useState } from 'react';
 
 // Mock user data
 const userData = {
@@ -28,9 +29,31 @@ export default function ProfilePage() {
   const [newPost, setNewPost] = useState({ title: '', description: '', blogImage: null });
 
   useEffect(() => {
-    // console.log("user",user);
     if (!user) return navigate("/signin");
+    getUserPostedBlogs();
   }, [user])
+
+  const getUserPostedBlogs = async () => {
+    try {
+      const {data} = await axiosInstance.get("/my-blogs");
+      setBlogPosts(data);
+    } catch (error) {
+      return Toastify({
+        text: error?.response?.data?.error,
+        duration: 3000,
+        destination: "",
+        newWindow: true,
+        close: true,
+        gravity: "top", // `top` or `bottom`
+        position: "left", // `left`, `center` or `right`
+        stopOnFocus: true, // Prevents dismissing of toast on hover
+        style: {
+          background: "linear-gradient(to right, #A554F6, #5547E7)",
+        },
+        onClick: function () { } // Callback after click
+      }).showToast(); 
+    }
+  }
 
   const handleEdit = (id) => {
     setIsEditing(id)
@@ -48,7 +71,7 @@ export default function ProfilePage() {
   }
 
   const handleDelete = (id) => {
-    setBlogPosts(blogPosts.filter(post => post.id !== id))
+    setBlogPosts(blogPosts.filter(post => post?._id !== id))
     // Here you would typically send an API request to delete the post
   }
 
@@ -83,7 +106,7 @@ export default function ProfilePage() {
 
   const handleNewPostSubmit = async (e) => {
     e.preventDefault()
-    // const id = Math.max(...blogPosts.map(post => post.id)) + 1
+    // const id = Math.max(...blogPosts.map(post => post?._id)) + 1
     // const imageUrl = newPost.image ? URL.createObjectURL(newPost.image) : "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.hkWNtyeRI7DxlY_f4bBcNwHaE7%26pid%3DApi&f=1&ipt=4a9c089c46f9eb1c77ce89a3ae88ebb3dad566cec79e2c3e81f779e4f9e0aac4&ipo=images"
     // setBlogPosts([{ id, date: new Date().toISOString().split('T')[0], ...newPost, image: imageUrl }, ...blogPosts])
     // setNewPost({ title: '', description: '', image: null })
@@ -137,7 +160,7 @@ export default function ProfilePage() {
     const file = e.target.files[0]
     if (file) {
       const imageUrl = URL.createObjectURL(file)
-      setBlogPosts(posts => posts.map(post => post.id === postId ? { ...post, image: imageUrl } : post))
+      setBlogPosts(posts => posts.map(post => post?._id === postId ? { ...post, image: imageUrl } : post))
     }
   }
 
@@ -251,47 +274,47 @@ export default function ProfilePage() {
 
           {/* Blog Posts List */}
           <div className="space-y-6">
-            {blogPosts.map(post => (
-              <div key={post.id} className="bg-white shadow overflow-hidden sm:rounded-lg">
+            {blogPosts.length > 0 && blogPosts.map(post => (
+              <div key={post?._id} className="bg-white shadow overflow-hidden sm:rounded-lg">
                 <div className="md:flex">
                   <div className="md:flex-shrink-0">
-                    <img className="h-48 w-full object-cover md:w-48 md:h-full" src={post.image} alt={post.title} />
+                    <img className="h-48 w-full object-cover md:w-48 md:h-full" src={post?.blogImage} alt={post?.title} />
                   </div>
                   <div className="p-8 w-full">
-                    {isEditing === post.id ? (
+                    {isEditing === post?._id ? (
                       <div className="space-y-4">
                         <div>
-                          <label htmlFor={`edit-title-${post.id}`} className="block text-sm font-medium text-gray-700">Title</label>
+                          <label htmlFor={`edit-title-${post?._id}`} className="block text-sm font-medium text-gray-700">Title</label>
                           <input
                             type="text"
-                            id={`edit-title-${post.id}`}
-                            value={post.title}
-                            onChange={(e) => setBlogPosts(posts => posts.map(p => p.id === post.id ? { ...p, title: e.target.value } : p))}
+                            id={`edit-title-${post?._id}`}
+                            value={post?.title}
+                            onChange={(e) => setBlogPosts(posts => posts.map(p => p._id === post?._id ? { ...p, title: e.target.value } : p))}
                             className="mt-1 focus:ring-purple-500 focus:border-purple-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                           />
                         </div>
                         <div>
-                          <label htmlFor={`edit-description-${post.id}`} className="block text-sm font-medium text-gray-700">description</label>
+                          <label htmlFor={`edit-description-${post?._id}`} className="block text-sm font-medium text-gray-700">description</label>
                           <textarea
-                            id={`edit-description-${post.id}`}
-                            value={post.description}
-                            onChange={(e) => setBlogPosts(posts => posts.map(p => p.id === post.id ? { ...p, description: e.target.value } : p))}
+                            id={`edit-description-${post?._id}`}
+                            value={post?.description}
+                            onChange={(e) => setBlogPosts(posts => posts.map(p => p._id === post?._id ? { ...p, description: e.target.value } : p))}
                             className="mt-1 focus:ring-purple-500 focus:border-purple-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                             rows="3"
                           ></textarea>
                         </div>
                         <div>
-                          <label htmlFor={`edit-image-${post.id}`} className="block text-sm font-medium text-gray-700">Image</label>
+                          <label htmlFor={`edit-image-${post?._id}`} className="block text-sm font-medium text-gray-700">Image</label>
                           <input
                             type="file"
-                            id={`edit-image-${post.id}`}
-                            onChange={(e) => handleImageChange(e, post.id)}
+                            id={`edit-image-${post?._id}`}
+                            onChange={(e) => handleImageChange(e, post?._id)}
                             accept="image/*"
                             className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                           />
                         </div>
                         <div className="flex space-x-2">
-                          <button onClick={() => handleSave(post.id)} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                          <button onClick={() => handleSave(post?._id)} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                             Save
                           </button>
                           <button onClick={handleCancel} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
@@ -301,14 +324,14 @@ export default function ProfilePage() {
                       </div>
                     ) : (
                       <div>
-                        <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
-                        <p className="text-gray-600 mb-2">{post.date}</p>
-                        <p className="text-gray-700 mb-4">{post.description}</p>
+                        <h3 className="text-xl font-semibold mb-2">{post?.title.length > 100 ? post?.description.substring(0,100) + "...": post?.title}</h3>
+                        <p className="text-gray-600 mb-2">{moment(post?.updatedAt).format("YYYY-MM-DD")}</p>
+                        <p className="text-gray-700 mb-4">{post?.description.length > 100 ? post?.description.substring(0,100) + "...": post?.description}</p>
                         <div className="flex space-x-2">
-                          <button onClick={() => handleEdit(post.id)} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                          <button onClick={() => handleEdit(post?._id)} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             Edit
                           </button>
-                          <button onClick={() => handleDelete(post.id)} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                          <button onClick={() => handleDelete(post?._id)} className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                             Delete
                           </button>
                         </div>

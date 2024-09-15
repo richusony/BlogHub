@@ -3,6 +3,7 @@ import userAuth from "../middlewares/auth.js";
 import {
   getAllBlogs,
   getUserDetails,
+  getUserPostedBlogs,
   getUserProfileDetailsAndBlogs,
   signIn,
   signUp,
@@ -21,6 +22,8 @@ router.post("/signUp", signUp);
 router.post("/signin", signIn);
 
 router.get("/get-user", userAuth, getUserDetails);
+
+router.get("/my-blogs", userAuth, getUserPostedBlogs);
 
 router.get("/profile", userAuth, getUserProfileDetailsAndBlogs);
 

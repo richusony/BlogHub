@@ -1,1 +1,1 @@
-## User Blog Management
+## Blog Hub

@@ -12,7 +12,14 @@ import {
 } from "../utils/helper.js";
 
 export const getAllBlogs = async (req, res) => {
-  res.send("working");
+  try {
+    const allBlogs = await BlogModel.find({}).sort({ updatedAt: -1 }).populate("userId");
+    console.log("fetched all blogs");
+    res.status(200).json(allBlogs);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
 };
 
 export const signUp = async (req, res) => {
@@ -134,10 +141,24 @@ export const createNewPost = async (req, res) => {
     title,
     userId,
   });
-  if(!createBlog) return res.status(400).json({error: "Something went wrong. Please try after sometime"});
+  if (!createBlog)
+    return res
+      .status(400)
+      .json({ error: "Something went wrong. Please try after sometime" });
 
   console.log("blog posted");
   res.status(200).json(createBlog);
+};
+
+export const getUserPostedBlogs = async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const blogs = await BlogModel.find({ userId });
+    res.status(200).json(blogs);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
 };
 
 export const userRefreshToken = async (req, res) => {
