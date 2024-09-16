@@ -10,6 +10,7 @@ import {
   setCookieOptions,
   validateImageFile,
 } from "../utils/helper.js";
+import mongoose from "mongoose";
 
 export const getAllBlogs = async (req, res) => {
   try {
@@ -18,6 +19,22 @@ export const getAllBlogs = async (req, res) => {
       .populate("userId");
     console.log("fetched all blogs");
     res.status(200).json(allBlogs);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const getBlogDetails = async (req, res) => {
+  const { blogId } = req.params;
+  try {
+    if (!mongoose.isValidObjectId(blogId))
+      return res.status(404).json({ error: "Blog not found" });
+
+    const blogExists = await BlogModel.findById(blogId).populate("userId");
+    if (!blogExists) return res.status(404).json({ error: "Blog not found" });
+
+    res.status(200).json(blogExists);
   } catch (error) {
     console.log(error.message);
     res.status(400).json({ error: error.message });
@@ -101,7 +118,7 @@ export const getUserProfileDetailsAndBlogs = async (req, res) => {
     const userDetails = await UserModel.findById(userId);
     if (!userDetails) return res.status(404).json({ error: "User not Found" });
 
-    const fetchBlogs = await BlogModel.find({ userId }).sort({updatedAt: -1});
+    const fetchBlogs = await BlogModel.find({ userId }).sort({ updatedAt: -1 });
 
     console.log("Fetched User Details & Blogs");
     res.status(200).json({ userDetails, blogs: fetchBlogs });
@@ -200,7 +217,7 @@ export const updateBlog = async (req, res) => {
 export const getUserPostedBlogs = async (req, res) => {
   const userId = req.user._id;
   try {
-    const blogs = await BlogModel.find({ userId }).sort({updatedAt: -1});
+    const blogs = await BlogModel.find({ userId }).sort({ updatedAt: -1 });
     res.status(200).json(blogs);
   } catch (error) {
     console.log(error.message);
@@ -222,10 +239,13 @@ export const removeUserBlog = async (req, res) => {
         .json({ error: "You are not authorized to delete this post" });
 
     const deleteBlog = await BlogModel.findByIdAndDelete(blogId);
-    if (!deleteBlog) return res.status(400).json({error: "Something went wrong. Please try after sometime"});
+    if (!deleteBlog)
+      return res
+        .status(400)
+        .json({ error: "Something went wrong. Please try after sometime" });
 
     console.log("Blog Deleted");
-    res.status(200).json({message: "Blog Deleted Successfully"})
+    res.status(200).json({ message: "Blog Deleted Successfully" });
   } catch (error) {
     console.log(error.message);
     res.status(400).json({ error: error.message });

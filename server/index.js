@@ -19,6 +19,7 @@ const whitelist = [
   "https://richu-bloghub.vercel.app",
   "https://blog-hub-git-main-richusonys-projects.vercel.app",
   "https://blog-iqepim5yi-richusonys-projects.vercel.app",
+  "https://blog-3qd0xgbca-richusonys-projects.vercel.app",
   "https://bloghub-nfwx.onrender.com",
 ];
 

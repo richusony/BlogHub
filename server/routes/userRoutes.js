@@ -11,13 +11,16 @@ import {
   logoutUser,
   createNewPost,
   updateBlog,
-  removeUserBlog
+  removeUserBlog,
+  getBlogDetails
 } from "../controllers/userController.js";
 import { parser } from "../utils/multer.js";
 
 const router = express.Router();
 
 router.get("/blogs", getAllBlogs);
+
+router.get("/blog/:blogId", getBlogDetails);
 
 router.post("/signUp", signUp);
 

@@ -8,6 +8,8 @@ import SignIn from './pages/SignIn.jsx';
 import SignUp from './pages/SignUp.jsx';
 import Profile from './pages/Profile.jsx';
 import { UserContextProvider } from './context/userContext.jsx';
+import BlogDetailPage from './pages/BlogDetailed.jsx';
+import PageNotFound from './pages/PageNotFound.jsx';
 
 const router = createBrowserRouter([
   {
@@ -25,7 +27,20 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: <Profile />
-  }
+  },
+  {
+    path: "/blog/:blogId",
+    element: <BlogDetailPage/>
+  },
+  {
+    path: "/page-not-found",
+    element: <PageNotFound />
+  },
+  {
+    path: "*",
+    element: <PageNotFound />
+  },
+  
 ]);
 
 createRoot(document.getElementById('root')).render(

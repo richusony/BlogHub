@@ -70,7 +70,7 @@ const DefaultNavbar = () => {
                 <a href="/signin" className="py-2 px-2 font-medium text-gray-500 rounded hover:bg-purple-500 hover:text-white transition duration-300">Log In</a>
                 <a href="/signup" className="py-2 px-2 font-medium text-white bg-purple-500 rounded hover:bg-purple-400 transition duration-300">Sign Up</a>
               </div>
-              <div className="md:hidden flex items-center">
+              {/* <div className="md:hidden flex items-center">
                 <button className="outline-none mobile-menu-button" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                   <svg className="w-6 h-6 text-gray-500 hover:text-purple-500"
                     fill="none"
@@ -83,7 +83,7 @@ const DefaultNavbar = () => {
                     <path d="M4 6h16M4 12h16M4 18h16"></path>
                   </svg>
                 </button>
-              </div>
+              </div> */}
             </>
           }
           <div className="-mr-2 flex items-center sm:hidden">
